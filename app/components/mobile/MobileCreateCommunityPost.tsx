@@ -1,14 +1,18 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, ImageIcon, X } from "lucide-react";
+import { useAlert } from "@/app/contexts/AlertContext";
+import { createCommunity } from "@/app/api/communityAPI";
 
 export default function MobileCreateCommunityPost({ onClose = () => {} }) {
+  const { showAlert } = useAlert();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [images, setImages] = useState<File[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -21,9 +25,18 @@ export default function MobileCreateCommunityPost({ onClose = () => {} }) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
-    console.log({ title, content, images });
-    onClose();
+    setIsLoading(true);
+    createCommunity({ title, description: content }, images)
+      .then(() => {
+        showAlert("글 작성에 성공했습니다.", "success");
+        onClose();
+      })
+      .catch((e) => {
+        showAlert("글 작성에 실패했습니다.", "error");
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   };
 
   return (
@@ -102,7 +115,9 @@ export default function MobileCreateCommunityPost({ onClose = () => {} }) {
           <Button type="button" variant="outline" onClick={onClose}>
             취소
           </Button>
-          <Button type="submit">작성 완료</Button>
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? "작성 중..." : "작성완료"}
+          </Button>
         </div>
       </form>
     </div>

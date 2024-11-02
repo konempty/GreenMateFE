@@ -62,20 +62,27 @@ export default function ViewRecruitment({
   const handleComment = (e: React.FormEvent) => {
     e.preventDefault();
     setIsCommenting(true);
-    createTeamRecruitmentComment(teamRecruitId, commentContent).then(() => {
-      data.comments.push({
-        user: {
-          id: user.userId,
-          nickname: user.nickname,
-          profileImageUrl: user.profileImageUrl,
-        },
-        content: commentContent,
-        id: 0,
-        createdAt: format(new Date(), "yyyy-MM-dd HH:mm"),
+    createTeamRecruitmentComment(teamRecruitId, commentContent)
+      .then(() => {
+        data.comments.push({
+          user: {
+            id: user.userId,
+            nickname: user.nickname,
+            profileImageUrl: user.profileImageUrl,
+          },
+          content: commentContent,
+          id: data.comments.length + 1,
+          createdAt: format(new Date(), "yyyy-MM-dd HH:mm"),
+        });
+        setData({ ...data });
+        setCommentContent("");
+      })
+      .catch(() => {
+        showAlert("댓글 작성에 실패했습니다.", "error");
+      })
+      .finally(() => {
+        setIsCommenting(false);
       });
-      setData({ ...data });
-      setCommentContent("");
-    });
   };
 
   return (
@@ -189,7 +196,7 @@ export default function ViewRecruitment({
             className="mb-2"
           />
           <Button type="submit" disabled={isCommenting || !commentContent}>
-            {isJoining ? (
+            {isCommenting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 작성중...

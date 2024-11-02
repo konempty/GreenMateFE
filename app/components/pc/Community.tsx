@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -7,78 +7,38 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Heart,
-  MessageCircle,
-  Share2,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Heart, MessageCircle } from "lucide-react";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-
-interface CommunityPost {
-  id: number;
-  author: string;
-  avatar: string;
-  content: string;
-  images: string[];
-  likes: number;
-  comments: number;
-}
-
-interface CommunityProps {
-  onCreateClick: () => void;
-  onViewClick?: (postId: number) => void;
-}
+import { getCommunityList, likeCommunity } from "@/app/api/communityAPI";
+import { useAlert } from "@/app/contexts/AlertContext";
 
 export default function Community({
   onCreateClick,
   onViewClick = () => {},
 }: CommunityProps) {
-  const [posts, setPosts] = useState<CommunityPost[]>([
-    {
-      id: 1,
-      author: "에코맘",
-      avatar: "/placeholder.svg?height=40&width=40",
-      content:
-        "오늘 아이들과 함께 공원 청소를 했어요. 작은 실천이 큰 변화를 만듭니다!",
-      images: [
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
-      ],
-      likes: 15,
-      comments: 3,
-    },
-    {
-      id: 2,
-      author: "그린워커",
-      avatar: "/placeholder.svg?height=40&width=40",
-      content: "플라스틱 없는 한 달 살기 도전 중! 여러분도 동참해보세요.",
-      images: [],
-      likes: 28,
-      comments: 7,
-    },
-    {
-      id: 3,
-      author: "지구사랑",
-      avatar: "/placeholder.svg?height=40&width=40",
-      content:
-        "재활용 센터 방문 후기: 우리의 쓰레기가 어떻게 처리되는지 알게 되었어요.",
-      images: ["/placeholder.svg?height=400&width=600"],
-      likes: 42,
-      comments: 12,
-    },
-  ]);
+  const { showAlert } = useAlert();
+  const [posts, setPosts] = useState<CommunityPost[]>([]);
+  useEffect(() => {
+    getCommunityList().then((r) => setPosts(r.data));
+  }, []);
 
   const handleLike = (postId: number) => {
-    setPosts(
-      posts.map((post) =>
-        post.id === postId ? { ...post, likes: post.likes + 1 } : post,
-      ),
-    );
+    likeCommunity(postId).then((r) => {
+      if (r.data.isLike) {
+        showAlert("좋아요를 눌렀습니다.", "success");
+      } else {
+        showAlert("좋아요를 취소했습니다.", "success");
+      }
+      setPosts(
+        posts.map((post) =>
+          post.id === postId
+            ? { ...post, likeCount: r.data.likeCount, isLiked: r.data.isLike }
+            : post,
+        ),
+      );
+    });
   };
 
   const CustomPrevArrow = ({ onClick = () => {} }) => {
@@ -149,20 +109,25 @@ export default function Community({
           <Card key={post.id} className="overflow-hidden">
             <CardHeader className="flex flex-row items-center space-x-4 pb-4">
               <Avatar>
-                <AvatarImage src={post.avatar} alt={post.author} />
-                <AvatarFallback>{post.author[0]}</AvatarFallback>
+                <AvatarImage
+                  src={post.user.profileImageUrl}
+                  alt={post.user.nickname}
+                />
+                <AvatarFallback>{post.user.nickname[0]}</AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-bold">{post.author}</p>
-                <p className="text-sm text-muted-foreground">3시간 전</p>
+                <p className="font-bold">{post.user.nickname}</p>
+                <p className="text-sm text-muted-foreground">
+                  {post.createdAt}
+                </p>
               </div>
             </CardHeader>
             <CardContent>
-              <p className="mb-4">{post.content}</p>
-              {post.images.length > 0 && (
+              <p className="mb-4">{post.title}</p>
+              {post.imageUrls.length > 0 && (
                 <div className="relative w-full" style={{ maxHeight: "400px" }}>
                   <Slider {...sliderSettings} className="max-h-[400px]">
-                    {post.images.map((image, index) => (
+                    {post.imageUrls.map((image, index) => (
                       <div key={index} className="outline-none h-[400px]">
                         <img
                           src={image}
@@ -183,15 +148,15 @@ export default function Community({
                   size="sm"
                   onClick={() => handleLike(post.id)}
                 >
-                  <Heart className="mr-2 h-4 w-4" /> {post.likes}
+                  <Heart
+                    className={`mr-2 h-4 w-4 ${post.isLiked ? "fill-red-500 text-red-500" : ""}`}
+                  />
+                  {post.likeCount}
                 </Button>
                 <Button variant="ghost" size="sm">
-                  <MessageCircle className="mr-2 h-4 w-4" /> {post.comments}
+                  <MessageCircle className="mr-2 h-4 w-4" /> {post.commentCount}
                 </Button>
               </div>
-              <Button variant="ghost" size="sm">
-                <Share2 className="mr-2 h-4 w-4" /> 공유
-              </Button>
             </CardFooter>
           </Card>
         ))}

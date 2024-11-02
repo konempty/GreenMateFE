@@ -29,7 +29,6 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { useLocalStorage } from "@/app/util";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("team-recruitment");
@@ -46,13 +45,13 @@ export default function App() {
   const [isViewingRecruitment, setIsViewingRecruitment] = useState(false);
   const [isCreatingCommunityPost, setIsCreatingCommunityPost] = useState(false);
   const [isViewingCommunityPost, setIsViewingCommunityPost] = useState(false);
-  const [temp1, setTemp] = useLocalStorage("accessToken");
   const [isSigningUp, setIsSigningUp] = useState(false);
   const [accessToken, setAccessToken] = useState(
     localStorage.getItem("accessToken"),
   );
   const [user, setUser] = useState<User>();
   const [teamRecruitId, setTeamRecruitId] = useState<number>(0);
+  const [communityPostId, setCommunityPostId] = useState<number>(0);
 
   if (accessToken) {
     if (!user) {
@@ -127,37 +126,6 @@ export default function App() {
     }
   }
 
-  const mockCommunityPostData = {
-    id: 1,
-    title: "오늘의 환경 보호 활동",
-    content:
-      "오늘 동네 공원에서 쓰레기를 주웠어요. 작은 실천이 모여 큰 변화를 만듭니다!",
-    date: "2024-05-15",
-    images: [
-      "/placeholder.svg?height=200&width=300",
-      "/placeholder.svg?height=200&width=300",
-    ],
-    author: {
-      name: "그린워커",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    likes: 15,
-    comments: [
-      {
-        id: 1,
-        author: "에코맘",
-        content: "멋진 활동이네요! 저도 다음에 참여하고 싶어요.",
-        date: "2024-05-15 14:30",
-      },
-      {
-        id: 2,
-        author: "지구사랑",
-        content: "환경을 위한 노력에 감사드립니다!",
-        date: "2024-05-15 15:45",
-      },
-    ],
-  };
-
   function resetComponentStatus() {
     setIsCreatingRecruitment(false);
     setIsViewingRecruitment(false);
@@ -194,7 +162,7 @@ export default function App() {
             />
           ) : isViewingCommunityPost ? (
             <MobileViewCommunityPost
-              data={mockCommunityPostData}
+              postId={communityPostId}
               onClose={() => setIsViewingCommunityPost(false)}
             />
           ) : (
@@ -211,7 +179,10 @@ export default function App() {
               {activeTab === "community" && (
                 <MobileCommunity
                   onCreateClick={() => setIsCreatingCommunityPost(true)}
-                  onViewClick={() => setIsViewingCommunityPost(true)}
+                  onViewClick={(postId) => {
+                    setIsViewingCommunityPost(true);
+                    setCommunityPostId(postId);
+                  }}
                 />
               )}
               {activeTab === "recycling-learning" && (
@@ -380,11 +351,14 @@ export default function App() {
                 onClose={() => setIsCreatingCommunityPost(false)}
               />
             ) : isViewingCommunityPost ? (
-              <ViewCommunityPost data={mockCommunityPostData} />
+              <ViewCommunityPost postId={communityPostId} />
             ) : (
               <Community
                 onCreateClick={() => setIsCreatingCommunityPost(true)}
-                onViewClick={() => setIsViewingCommunityPost(true)}
+                onViewClick={(postId) => {
+                  setIsViewingCommunityPost(true);
+                  setCommunityPostId(postId);
+                }}
               />
             )}
           </TabsContent>

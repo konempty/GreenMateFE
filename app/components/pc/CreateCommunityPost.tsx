@@ -1,14 +1,19 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ImageIcon, X } from "lucide-react";
+import { createCommunity } from "@/app/api/communityAPI";
+import { useAlert } from "@/app/contexts/AlertContext";
 
 export default function CreateCommunityPost({ onClose = () => {} }) {
+  const { showAlert } = useAlert();
+  const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [images, setImages] = useState<File[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -21,9 +26,18 @@ export default function CreateCommunityPost({ onClose = () => {} }) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
-    console.log({ content, images });
-    onClose();
+    setIsLoading(true);
+    createCommunity({ title, description: content }, images)
+      .then(() => {
+        showAlert("글 작성에 성공했습니다.", "success");
+        onClose();
+      })
+      .catch((e) => {
+        showAlert("글 작성에 실패했습니다.", "error");
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   };
 
   return (
@@ -33,6 +47,15 @@ export default function CreateCommunityPost({ onClose = () => {} }) {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="title">제목</Label>
+            <Input
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+            />
+          </div>
           <div>
             <Label htmlFor="content">내용</Label>
             <Textarea
@@ -91,7 +114,9 @@ export default function CreateCommunityPost({ onClose = () => {} }) {
             <Button type="button" variant="outline" onClick={onClose}>
               취소
             </Button>
-            <Button type="submit">작성 완료</Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "작성 중..." : "작성완료"}
+            </Button>
           </div>
         </form>
       </CardContent>

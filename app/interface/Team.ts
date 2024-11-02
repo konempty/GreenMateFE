@@ -29,19 +29,3 @@ interface RecruitmentData {
   joinCount: number;
   isJoined: boolean;
 }
-
-interface CommentDto {
-  id: number;
-  content: string;
-  createdAt: string;
-  user: UserSimple;
-}
-/*
-    val id: Long,
-    val title: String,
-    val description: String,
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-    val dueDate: LocalDateTime,
-    val area: AreaDto?,
-    val imageUrls: List<String>,
-    val comments: List<CommentDto>,*/
