@@ -12,14 +12,28 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, Loader2, X } from "lucide-react";
-import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
+import {
+  Calendar as CalendarIcon,
+  Circle,
+  Loader2,
+  Pentagon,
+  X,
+} from "lucide-react";
+import {
+  DrawingManager,
+  GoogleMap,
+  Libraries,
+  useJsApiLoader,
+} from "@react-google-maps/api";
 import { createTeamRecruitment } from "@/app/api/teamAPI";
 import { useAlert } from "@/app/contexts/AlertContext";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface CreateRecruitmentProps {
   onClose: () => void;
 }
+
+const libraries: Libraries = ["drawing"];
 
 export default function CreateRecruitment({ onClose }: CreateRecruitmentProps) {
   const { showAlert } = useAlert();
@@ -30,10 +44,17 @@ export default function CreateRecruitment({ onClose }: CreateRecruitmentProps) {
   const [images, setImages] = useState<File[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [location, setLocation] = useState({ lat: 37.5665, lng: 126.978 }); // Default to Seoul
+  const [drawingMode, setDrawingMode] = useState<"circle" | "polygon" | null>(
+    null,
+  );
+  const [selectedShape, setSelectedShape] = useState<
+    google.maps.Circle | google.maps.Polygon | null
+  >(null);
 
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+    libraries: libraries,
   });
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,11 +74,48 @@ export default function CreateRecruitment({ onClose }: CreateRecruitmentProps) {
     }
     setIsLoading(true);
     const fullDate = new Date(`${format(date, "yyyy-MM-dd")} ${time}`);
+    let area: Area | null = null;
+    if (drawingMode != null) {
+      if (!selectedShape) {
+        showAlert("영역을 그려주세요.", "info");
+        setIsLoading(false);
+        return;
+      }
+      if (drawingMode === "circle") {
+        const circle = selectedShape as google.maps.Circle;
+        const center = circle.getCenter()!!;
+        const radius = circle.getRadius();
+        area = {
+          type: "CIRCLE",
+          center: { latitude: center.lat(), longitude: center.lng() },
+          radius: radius,
+          points: null,
+        };
+      } else if (drawingMode === "polygon") {
+        const polygon = selectedShape as google.maps.Polygon;
+        const paths = polygon.getPath().getArray();
+        const points = paths.map((latLng) => ({
+          latitude: latLng.lat(),
+          longitude: latLng.lng(),
+        }));
+        points.push({
+          latitude: points[0].latitude,
+          longitude: points[0].longitude,
+        });
+        area = {
+          type: "POLYGON",
+          center: null,
+          radius: null,
+          points: points,
+        };
+      }
+    }
     createTeamRecruitment(
       {
         title,
         description: content,
         dueDate: format(fullDate, "yyyy-MM-dd HH:mm:ss"),
+        area,
       },
       images,
     )
@@ -76,6 +134,33 @@ export default function CreateRecruitment({ onClose }: CreateRecruitmentProps) {
       .finally(() => {
         setIsLoading(false);
       });
+  };
+
+  const clearSelectedShape = () => {
+    if (selectedShape) {
+      selectedShape.setMap(null);
+      setSelectedShape(null);
+    }
+  };
+
+  const onOverlayComplete = (e: google.maps.drawing.OverlayCompleteEvent) => {
+    clearSelectedShape();
+
+    if (e.type === "circle") {
+      const circle = e.overlay as google.maps.Circle;
+      setSelectedShape(circle);
+      const center = circle.getCenter();
+      const radius = circle.getRadius();
+      console.log({ center: center?.toJSON(), radius });
+    } else if (e.type === "polygon") {
+      const polygon = e.overlay as google.maps.Polygon;
+      setSelectedShape(polygon);
+      const paths = polygon
+        .getPath()
+        .getArray()
+        .map((latLng) => latLng.toJSON());
+      console.log({ paths });
+    }
   };
 
   return (
@@ -170,17 +255,72 @@ export default function CreateRecruitment({ onClose }: CreateRecruitmentProps) {
             </div>
           </div>
           <div>
-            <Label>위치</Label>
+            <Label>활동영역</Label>
+            <div className="mb-2">
+              <ToggleGroup
+                type="single"
+                value={drawingMode || ""}
+                onValueChange={(value) =>
+                  setDrawingMode(value as "circle" | "polygon" | null)
+                }
+              >
+                <ToggleGroupItem value="circle" aria-label="원형 영역 그리기">
+                  <Circle className="h-4 w-4" />
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="polygon"
+                  aria-label="다각형 영역 그리기"
+                >
+                  <Pentagon className="h-4 w-4" />
+                </ToggleGroupItem>
+              </ToggleGroup>
+              {selectedShape && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={clearSelectedShape}
+                  className="ml-2"
+                >
+                  영역 지우기
+                </Button>
+              )}
+            </div>
             {isLoaded ? (
               <GoogleMap
                 mapContainerStyle={{ width: "100%", height: "400px" }}
                 center={location}
                 zoom={10}
-                onClick={(e) =>
-                  setLocation({ lat: e.latLng!!.lat(), lng: e.latLng!!.lng() })
-                }
               >
-                <Marker position={location} />
+                <DrawingManager
+                  options={{
+                    drawingControl: false,
+                    circleOptions: {
+                      fillColor: "#42a5f5",
+                      fillOpacity: 0.3,
+                      strokeWeight: 2,
+                      strokeColor: "#1976d2",
+                      clickable: true,
+                      editable: true,
+                    },
+                    polygonOptions: {
+                      fillColor: "#42a5f5",
+                      fillOpacity: 0.3,
+                      strokeWeight: 2,
+                      strokeColor: "#1976d2",
+                      clickable: true,
+                      editable: true,
+                    },
+                  }}
+                  drawingMode={
+                    drawingMode === "circle"
+                      ? google.maps.drawing.OverlayType.CIRCLE
+                      : drawingMode === "polygon"
+                        ? google.maps.drawing.OverlayType.POLYGON
+                        : null
+                  }
+                  onOverlayComplete={onOverlayComplete}
+                />
               </GoogleMap>
             ) : (
               <div>Loading map...</div>

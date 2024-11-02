@@ -11,6 +11,7 @@ interface CreateRecruitmentRequest {
   title: string;
   description: string;
   dueDate: string;
+  area: Area | null;
 }
 
 interface TeamRecruitmentProps {
@@ -28,4 +29,25 @@ interface RecruitmentData {
   comments: CommentDto[];
   joinCount: number;
   isJoined: boolean;
+  area: Area | null;
 }
+
+interface Area {
+  type: "CIRCLE" | "POLYGON" | null;
+  center: Point | null;
+  radius: number | null;
+  points: Point[] | null;
+}
+
+interface Point {
+  latitude: number;
+  longitude: number;
+}
+
+/*
+*
+    val type: AreaType?,
+    val center: Point?,
+    val radius: Double?,
+    val points: List<Point>?,
+* */

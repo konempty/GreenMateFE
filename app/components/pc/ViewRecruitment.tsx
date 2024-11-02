@@ -3,7 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Calendar, Loader2, MapPin, Users } from "lucide-react";
-import { GoogleMap, useJsApiLoader } from "@react-google-maps/api";
+import {
+  Circle as GoogleCircle,
+  GoogleMap,
+  Libraries,
+  Polygon,
+  useJsApiLoader,
+} from "@react-google-maps/api";
 import {
   createTeamRecruitmentComment,
   getTeamRecruitDetail,
@@ -12,6 +18,32 @@ import {
 import { useAlert } from "@/app/contexts/AlertContext";
 import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
+
+const libraries: Libraries = ["drawing"];
+
+const calculateZoomLevel = (area: Area) => {
+  if (area.type === "CIRCLE") {
+    const radius = area.radius!!;
+    // 반경에 따른 줌 레벨 계산
+    if (radius < 100) return 17;
+    if (radius < 500) return 15;
+    if (radius < 1000) return 14;
+    if (radius < 5000) return 12;
+    return 10;
+  } else {
+    // 다각형의 경우 모든 점들의 범위를 계산
+    const lats = area.points!!.map((p) => p.latitude);
+    const lngs = area.points!!.map((p) => p.longitude);
+    const latDiff = Math.max(...lats) - Math.min(...lats);
+    const lngDiff = Math.max(...lngs) - Math.min(...lngs);
+    const maxDiff = Math.max(latDiff, lngDiff);
+
+    if (maxDiff < 0.01) return 15;
+    if (maxDiff < 0.05) return 13;
+    if (maxDiff < 0.1) return 11;
+    return 10;
+  }
+};
 
 export default function ViewRecruitment({
   teamRecruitId,
@@ -30,6 +62,7 @@ export default function ViewRecruitment({
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+    libraries: libraries,
   });
 
   if (!data) return <div>로딩중...</div>;
@@ -125,21 +158,73 @@ export default function ViewRecruitment({
           <p className="text-gray-700">{data.description}</p>
           <div className="flex items-center space-x-2 text-sm text-gray-500">
             <MapPin className="w-4 h-4" />
-            <span>활동 위치</span>
+            <span>활동영역</span>
           </div>
-          {isLoaded ? (
+          {isLoaded && data.area != null ? (
             <GoogleMap
               mapContainerStyle={{ width: "100%", height: "300px" }}
-              //center={data.location}
-              zoom={15}
-            >
-              {
-                //<Marker position={data.location} />
+              center={
+                data.area.type === "CIRCLE"
+                  ? {
+                      lat: data.area.center!!.latitude,
+                      lng: data.area.center!!.longitude,
+                    }
+                  : {
+                      lat: data.area.points!![0].latitude,
+                      lng: data.area.points!![0].longitude,
+                    }
               }
+              zoom={data.area ? calculateZoomLevel(data.area) : 15}
+              options={{
+                disableDefaultUI: true,
+                zoomControl: false,
+                gestureHandling: "none",
+                draggable: false,
+                clickableIcons: false,
+                styles: [
+                  {
+                    elementType: "geometry",
+                    stylers: [{ color: "#f5f5f5" }],
+                  },
+                ],
+              }}
+            >
+              {data.area.type === "CIRCLE" ? (
+                <GoogleCircle
+                  center={{
+                    lat: data.area.center!!.latitude,
+                    lng: data.area.center!!.longitude,
+                  }}
+                  radius={data.area.radius!!}
+                  options={{
+                    fillColor: "#42a5f5",
+                    fillOpacity: 0.3,
+                    strokeWeight: 2,
+                    strokeColor: "#1976d2",
+                    clickable: false,
+                    editable: false,
+                  }}
+                />
+              ) : (
+                <Polygon
+                  paths={data.area.points!!.map((point) => ({
+                    lat: point.latitude,
+                    lng: point.longitude,
+                  }))}
+                  options={{
+                    fillColor: "#42a5f5",
+                    fillOpacity: 0.3,
+                    strokeWeight: 2,
+                    strokeColor: "#1976d2",
+                    clickable: false,
+                    editable: false,
+                  }}
+                />
+              )}
             </GoogleMap>
-          ) : (
+          ) : data.area != null ? (
             <div>Loading map...</div>
-          )}
+          ) : null}
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-2">
               <Users className="w-5 h-5 text-gray-500" />
