@@ -8,7 +8,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Info } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { getLearningList } from "@/app/api/LearningAPI";
+import { getLearningList } from "@/app/api/learningAPI";
 
 export default function RecyclingLearning() {
   const [learningItems, setLearningItems] = useState<Learning[]>([]);

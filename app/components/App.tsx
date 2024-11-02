@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -22,6 +22,7 @@ import SignUp from "./SignUp";
 import UserProfile from "./UserProfile";
 import {
   Leaf,
+  Loader2,
   MessageCircle,
   MessageSquare,
   Recycle,
@@ -29,8 +30,11 @@ import {
   Users,
   X,
 } from "lucide-react";
+import { getChat } from "@/app/api/chatBotAPI";
+import { useAlert } from "@/app/contexts/AlertContext";
 
 export default function App() {
+  const { showAlert } = useAlert();
   const [activeTab, setActiveTab] = useState("team-recruitment");
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [messages, setMessages] = useState<{ text: string; sender: string }[]>([
@@ -52,6 +56,7 @@ export default function App() {
   const [user, setUser] = useState<User>();
   const [teamRecruitId, setTeamRecruitId] = useState<number>(0);
   const [communityPostId, setCommunityPostId] = useState<number>(0);
+  const [isChatting, setIsChatting] = useState(false);
 
   if (accessToken) {
     if (!user) {
@@ -76,17 +81,37 @@ export default function App() {
   const sendMessage = (e: { preventDefault: () => void }) => {
     e.preventDefault();
     if (inputMessage.trim()) {
-      setMessages([...messages, { text: inputMessage, sender: "user" }]);
+      setIsChatting(true);
+      const addedMessage = [
+        ...messages,
+        { text: inputMessage, sender: "user" },
+      ];
+      setMessages(addedMessage);
       setInputMessage("");
-      setTimeout(() => {
-        setMessages((prev) => [
-          ...prev,
-          {
-            text: "Thanks for your message! How can I help you today?",
-            sender: "bot",
-          },
-        ]);
-      }, 1000);
+      getChat(addedMessage)
+        .then((r) => {
+          if (r.status === 200) {
+            setMessages([
+              ...addedMessage,
+              { text: r.data.text, sender: "bot" },
+            ]);
+          } else {
+            addedMessage.pop();
+            setMessages(addedMessage);
+            showAlert("챗봇과 대화하는 중 오류가 발생했습니다.", "error");
+          }
+        })
+        .catch((error) => {
+          addedMessage.pop();
+          setMessages(addedMessage);
+          showAlert(
+            error.message || "챗봇과 대화하는 중 오류가 발생했습니다.",
+            "error",
+          );
+        })
+        .finally(() => {
+          setIsChatting(false);
+        });
     }
   };
 
@@ -259,6 +284,7 @@ export default function App() {
                 >
                   <div
                     className={`rounded-lg p-2 max-w-[70%] ${message.sender === "user" ? "bg-green-500 text-white" : "bg-gray-200"}`}
+                    style={{ whiteSpace: "pre-wrap" }}
                   >
                     {message.text}
                   </div>
@@ -273,8 +299,20 @@ export default function App() {
                 onChange={(e) => setInputMessage(e.target.value)}
                 className="flex-1 mr-2"
               />
-              <Button type="submit" size="icon" aria-label="Send message">
-                <Send className="w-4 h-4" />
+              <Button
+                type="submit"
+                size="icon"
+                aria-label="Send message"
+                disabled={isChatting}
+              >
+                {isChatting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    생각중...
+                  </>
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
               </Button>
             </form>
           </Card>
@@ -403,6 +441,7 @@ export default function App() {
               >
                 <div
                   className={`rounded-lg p-2 max-w-[70%] ${message.sender === "user" ? "bg-green-500 text-white" : "bg-gray-200"}`}
+                  style={{ whiteSpace: "pre-wrap" }}
                 >
                   {message.text}
                 </div>
@@ -417,8 +456,20 @@ export default function App() {
               onChange={(e) => setInputMessage(e.target.value)}
               className="flex-1 mr-2"
             />
-            <Button type="submit" size="icon" aria-label="Send message">
-              <Send className="w-4 h-4" />
+            <Button
+              type="submit"
+              size="icon"
+              aria-label="Send message"
+              disabled={isChatting}
+            >
+              {isChatting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  생각중...
+                </>
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
             </Button>
           </form>
         </Card>

@@ -7,7 +7,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import React, { useEffect, useState } from "react";
-import { getLearningList } from "@/app/api/LearningAPI";
+import { getLearningList } from "@/app/api/learningAPI";
 
 export default function MobileRecyclingLearning() {
   const [learningItems, setLearningItems] = useState<Learning[]>([]);
