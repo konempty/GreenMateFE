@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,20 +10,39 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Leaf } from "lucide-react";
+import { Leaf, Loader2 } from "lucide-react";
+import { login } from "@/app/util/userAPI";
+import { useAlert } from "@/app/contexts/AlertContext";
 
-export default function Login({
-  onLogin = () => {},
-  onSwitchToSignUp = () => {},
-}) {
+interface LoginProps {
+  onLogin: (response: AccessTokenResponse) => void;
+  onSwitchToSignUp: () => void;
+}
+
+export default function Login({ onLogin, onSwitchToSignUp }: LoginProps) {
+  const { showAlert } = useAlert();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically handle the login logic
-    console.log("Login attempt with:", { email, password });
-    onLogin();
+    setIsLoading(true);
+    login(email, password)
+      .then((response) => {
+        if (response.status === 200) onLogin(response.data);
+        else
+          showAlert(
+            response.data.errorMessage || "에러가 발생했습니다.",
+            "error",
+          );
+      })
+      .catch((error: any) => {
+        showAlert(error.message, "error");
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   };
 
   return (
@@ -63,8 +82,15 @@ export default function Login({
                 />
               </div>
             </div>
-            <Button type="submit" className="w-full mt-6">
-              로그인
+            <Button type="submit" className="w-full mt-6" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  로그인 중...
+                </>
+              ) : (
+                "로그인"
+              )}
             </Button>
           </form>
         </CardContent>

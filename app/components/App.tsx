@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -22,12 +22,12 @@ import SignUp from "./SignUp";
 import UserProfile from "./UserProfile";
 import {
   Leaf,
-  Users,
+  MessageCircle,
   MessageSquare,
   Recycle,
-  MessageCircle,
-  X,
   Send,
+  Users,
+  X,
 } from "lucide-react";
 
 export default function App() {
@@ -45,13 +45,18 @@ export default function App() {
   const [isViewingRecruitment, setIsViewingRecruitment] = useState(false);
   const [isCreatingCommunityPost, setIsCreatingCommunityPost] = useState(false);
   const [isViewingCommunityPost, setIsViewingCommunityPost] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    localStorage.getItem("loginToken") != null,
+  );
   const [isSigningUp, setIsSigningUp] = useState(false);
-  const [user] = useState({
-    name: "김그린",
-    email: "green@example.com",
-    avatar: "/placeholder.svg?height=32&width=32",
-  });
+  const [user, setUser] = useState<User>();
+  if (isLoggedIn && !user) {
+    const decodedToken = JSON.parse(
+      atob(localStorage.getItem("loginToken")!!.split(".")[1]),
+    );
+    setUser(decodedToken);
+    setIsLoggedIn(true);
+  }
 
   useEffect(() => {
     const checkMobile = () => {
@@ -81,15 +86,21 @@ export default function App() {
     }
   };
 
-  const handleLogin = () => {
+  const handleLogin = (token: AccessTokenResponse) => {
+    localStorage.setItem("loginToken", token.accessToken);
+    localStorage.setItem("refreshToken", token.refreshToken);
     setIsLoggedIn(true);
   };
 
   const handleLogout = () => {
+    localStorage.removeItem("loginToken");
+    localStorage.removeItem("refreshToken");
     setIsLoggedIn(false);
   };
 
-  const handleSignUp = () => {
+  const handleSignUp = (token: AccessTokenResponse) => {
+    localStorage.setItem("loginToken", token.accessToken);
+    localStorage.setItem("refreshToken", token.refreshToken);
     setIsLoggedIn(true);
     setIsSigningUp(false);
   };
@@ -178,7 +189,7 @@ export default function App() {
               <Leaf className="h-6 w-6 text-green-600 mr-2" />
               <h1 className="text-xl font-bold text-gray-900">GreenMate</h1>
             </div>
-            <UserProfile user={user} onLogout={handleLogout} />
+            {user ? <UserProfile user={user} onLogout={handleLogout} /> : null}
           </div>
         </header>
 
@@ -322,7 +333,7 @@ export default function App() {
             <h1 className="text-2xl font-bold text-gray-900">GreenMate</h1>
           </div>
           <div className="flex items-center space-x-4">
-            <UserProfile user={user} onLogout={handleLogout} />
+            {user ? <UserProfile user={user} onLogout={handleLogout} /> : null}
           </div>
         </div>
       </header>
