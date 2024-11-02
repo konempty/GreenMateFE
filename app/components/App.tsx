@@ -306,10 +306,7 @@ export default function App() {
                 disabled={isChatting}
               >
                 {isChatting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    생각중...
-                  </>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                   <Send className="w-4 h-4" />
                 )}
@@ -463,10 +460,7 @@ export default function App() {
               disabled={isChatting}
             >
               {isChatting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  생각중...
-                </>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
                 <Send className="w-4 h-4" />
               )}
