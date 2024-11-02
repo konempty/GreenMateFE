@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,15 +12,23 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, X } from "lucide-react";
+import { Calendar as CalendarIcon, Loader2, X } from "lucide-react";
 import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
+import { createTeamRecruitment } from "@/app/api/teamAPI";
+import { useAlert } from "@/app/contexts/AlertContext";
 
-export default function CreateRecruitment({ onClose = () => {} }) {
+interface CreateRecruitmentProps {
+  onClose: () => void;
+}
+
+export default function CreateRecruitment({ onClose }: CreateRecruitmentProps) {
+  const { showAlert } = useAlert();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [date, setDate] = useState<Date>();
   const [time, setTime] = useState("");
   const [images, setImages] = useState<File[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [location, setLocation] = useState({ lat: 37.5665, lng: 126.978 }); // Default to Seoul
 
   const { isLoaded } = useJsApiLoader({
@@ -39,9 +47,35 @@ export default function CreateRecruitment({ onClose = () => {} }) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
-    console.log({ title, content, date, time, images, location });
-    onClose();
+    if (!date) {
+      showAlert("마감 날짜를 선택해주세요.", "info");
+      return;
+    }
+    setIsLoading(true);
+    const fullDate = new Date(`${format(date, "yyyy-MM-dd")} ${time}`);
+    createTeamRecruitment(
+      {
+        title,
+        description: content,
+        dueDate: format(fullDate, "yyyy-MM-dd HH:mm:ss"),
+      },
+      images,
+    )
+      .then((response) => {
+        showAlert("팀 모집글이 작성되었습니다.", "success");
+        if (response.status === 201) onClose();
+        else
+          showAlert(
+            response.data.errorMessage || "에러가 발생했습니다.",
+            "error",
+          );
+      })
+      .catch((error) => {
+        showAlert(error.message, "error");
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   };
 
   return (
@@ -156,7 +190,16 @@ export default function CreateRecruitment({ onClose = () => {} }) {
             <Button type="button" variant="outline" onClick={onClose}>
               취소
             </Button>
-            <Button type="submit">작성 완료</Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  작성 중...
+                </>
+              ) : (
+                "작성 완료"
+              )}
+            </Button>
           </div>
         </form>
       </CardContent>

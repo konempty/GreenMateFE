@@ -1,48 +1,28 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Search, Users } from "lucide-react";
+import { getTeamRecruitList } from "@/app/api/teamAPI";
+import { statusToKorean } from "@/app/util";
 
 export default function TeamRecruitment({
-  onCreateClick = () => {},
-  onViewClick = () => {},
-}) {
+  onCreateClick,
+  onViewClick,
+}: TeamRecruitmentProps) {
   const [searchTerm, setSearchTerm] = useState("");
 
-  const recruitments = [
-    {
-      id: 1,
-      title: "해변 청소 봉사자 모집",
-      description: "주말 해변 청소 활동에 참여할 팀원을 모집합니다.",
-      date: "2024-05-15",
-      members: 5,
-      status: "모집중",
-    },
-    {
-      id: 2,
-      title: "재활용 캠페인 기획팀",
-      description: "지역 재활용 캠페인을 기획할 팀원을 찾습니다.",
-      date: "2024-06-01",
-      members: 3,
-      status: "모집중",
-    },
-    {
-      id: 3,
-      title: "친환경 제품 리뷰단",
-      description: "친환경 제품을 사용하고 리뷰를 작성할 팀원을 모집합니다.",
-      date: "2024-05-20",
-      members: 10,
-      status: "마감임박",
-    },
-  ];
+  const [recruitments, setRecruitments] = useState<TeamRecruitmentSimple[]>([]);
 
   const filteredRecruitments = recruitments.filter(
     (recruitment) =>
       recruitment.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       recruitment.description.toLowerCase().includes(searchTerm.toLowerCase()),
   );
+  useEffect(() => {
+    getTeamRecruitList().then((r) => setRecruitments(r.data));
+  }, []);
 
   return (
     <div className="p-4 max-w-4xl mx-auto">
@@ -83,21 +63,27 @@ export default function TeamRecruitment({
               </p>
               <div className="flex items-center text-sm text-gray-500 mb-2">
                 <Calendar className="w-4 h-4 mr-2" />
-                {recruitment.date}
+                {recruitment.dueDate}
               </div>
               <div className="flex items-center text-sm text-gray-500 mb-4">
                 <Users className="w-4 h-4 mr-2" />
-                {recruitment.members}명 모집
+                {recruitment.joinCount}명 참여
               </div>
               <div className="flex justify-between items-center">
                 <Badge
                   variant={
-                    recruitment.status === "모집중" ? "default" : "secondary"
+                    recruitment.status === "RECRUITING"
+                      ? "default"
+                      : "secondary"
                   }
                 >
-                  {recruitment.status}
+                  {statusToKorean(recruitment.status)}
                 </Badge>
-                <Button variant="outline" size="sm">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onViewClick(recruitment.id)}
+                >
                   상세보기
                 </Button>
               </div>

@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Leaf, Loader2 } from "lucide-react";
-import { login } from "@/app/util/userAPI";
+import { login } from "@/app/api/userAPI";
 import { useAlert } from "@/app/contexts/AlertContext";
 
 interface LoginProps {

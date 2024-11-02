@@ -5,6 +5,12 @@ interface User {
   profileImageUrl: string;
 }
 
+interface UserSimple {
+  id: string;
+  nickname: string;
+  profileImageUrl: string;
+}
+
 interface SignUpRequest {
   nickname: string;
   email: string;

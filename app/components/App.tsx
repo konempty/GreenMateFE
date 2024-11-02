@@ -29,6 +29,7 @@ import {
   Users,
   X,
 } from "lucide-react";
+import { useLocalStorage } from "@/app/util";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("team-recruitment");
@@ -45,17 +46,21 @@ export default function App() {
   const [isViewingRecruitment, setIsViewingRecruitment] = useState(false);
   const [isCreatingCommunityPost, setIsCreatingCommunityPost] = useState(false);
   const [isViewingCommunityPost, setIsViewingCommunityPost] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(
-    localStorage.getItem("loginToken") != null,
-  );
+  const [temp1, setTemp] = useLocalStorage("accessToken");
   const [isSigningUp, setIsSigningUp] = useState(false);
+  const [accessToken, setAccessToken] = useState(
+    localStorage.getItem("accessToken"),
+  );
   const [user, setUser] = useState<User>();
-  if (isLoggedIn && !user) {
-    const decodedToken = JSON.parse(
-      atob(localStorage.getItem("loginToken")!!.split(".")[1]),
-    );
-    setUser(decodedToken);
-    setIsLoggedIn(true);
+  const [teamRecruitId, setTeamRecruitId] = useState<number>(0);
+
+  if (accessToken) {
+    if (!user) {
+      const decodedToken = JSON.parse(atob(accessToken.split(".")[1]));
+      setUser(decodedToken);
+    }
+  } else if (user) {
+    setUser(undefined);
   }
 
   useEffect(() => {
@@ -87,21 +92,22 @@ export default function App() {
   };
 
   const handleLogin = (token: AccessTokenResponse) => {
-    localStorage.setItem("loginToken", token.accessToken);
+    localStorage.setItem("accessToken", token.accessToken);
     localStorage.setItem("refreshToken", token.refreshToken);
-    setIsLoggedIn(true);
+    setAccessToken(token.accessToken);
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("loginToken");
+    localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
-    setIsLoggedIn(false);
+    setAccessToken(null);
+    setUser(undefined);
   };
 
   const handleSignUp = (token: AccessTokenResponse) => {
-    localStorage.setItem("loginToken", token.accessToken);
+    localStorage.setItem("accessToken", token.accessToken);
     localStorage.setItem("refreshToken", token.refreshToken);
-    setIsLoggedIn(true);
+    setAccessToken(token.accessToken);
     setIsSigningUp(false);
   };
 
@@ -113,34 +119,13 @@ export default function App() {
     setIsSigningUp(false);
   };
 
-  if (!isLoggedIn) {
+  if (!accessToken) {
     if (isSigningUp) {
       return <SignUp onSignUp={handleSignUp} onSwitchToLogin={switchToLogin} />;
     } else {
       return <Login onLogin={handleLogin} onSwitchToSignUp={switchToSignUp} />;
     }
   }
-
-  const mockRecruitmentData = {
-    id: 1,
-    title: "해변 청소 봉사자 모집",
-    content:
-      "주말 해변 청소 활동에 참여할 팀원을 모집합니다. 우리 함께 깨끗한 해변을 만들어요!",
-    date: "2024-05-15",
-    time: "09:00",
-    location: { lat: 35.1586, lng: 129.1603 },
-    images: [
-      "/placeholder.svg?height=200&width=300",
-      "/placeholder.svg?height=200&width=300",
-    ],
-    author: {
-      name: "에코맘",
-      avatar: "/placeholder.svg?height=40&width=40",
-      rating: 4.8,
-    },
-    participants: 3,
-    maxParticipants: 10,
-  };
 
   const mockCommunityPostData = {
     id: 1,
@@ -200,7 +185,7 @@ export default function App() {
             />
           ) : isViewingRecruitment ? (
             <MobileViewRecruitment
-              data={mockRecruitmentData}
+              teamRecruitId={teamRecruitId}
               onClose={() => setIsViewingRecruitment(false)}
             />
           ) : isCreatingCommunityPost ? (
@@ -217,7 +202,10 @@ export default function App() {
               {activeTab === "team-recruitment" && (
                 <MobileTeamRecruitment
                   onCreateClick={() => setIsCreatingRecruitment(true)}
-                  onViewClick={() => setIsViewingRecruitment(true)}
+                  onViewClick={(teamRecruitId) => {
+                    setIsViewingRecruitment(true);
+                    setTeamRecruitId(teamRecruitId);
+                  }}
                 />
               )}
               {activeTab === "community" && (
@@ -375,11 +363,14 @@ export default function App() {
                 onClose={() => setIsCreatingRecruitment(false)}
               />
             ) : isViewingRecruitment ? (
-              <ViewRecruitment data={mockRecruitmentData} />
+              <ViewRecruitment teamRecruitId={teamRecruitId} />
             ) : (
               <TeamRecruitment
                 onCreateClick={() => setIsCreatingRecruitment(true)}
-                onViewClick={() => setIsViewingRecruitment(true)}
+                onViewClick={(teamRecruitId) => {
+                  setIsViewingRecruitment(true);
+                  setTeamRecruitId(teamRecruitId);
+                }}
               />
             )}
           </TabsContent>

@@ -1,4 +1,4 @@
-import axios from "./index";
+import axios from "../util";
 import { AxiosResponse } from "axios";
 
 export const signUp = (

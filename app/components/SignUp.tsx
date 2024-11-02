@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Leaf, Loader2, Upload } from "lucide-react";
-import { checkNicknameDuplicate, signUp } from "@/app/util/userAPI";
+import { checkNicknameDuplicate, signUp } from "@/app/api/userAPI";
 import { useAlert } from "@/app/contexts/AlertContext";
 
 interface SignUpProps {
