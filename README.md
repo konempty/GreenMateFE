@@ -59,37 +59,3 @@ GreenMate는 환경 운동가들을 위한 모임 독려 및 커뮤니티 플랫
    ```
 
 5. 브라우저에서 `http://localhost:3000` 접속
-
-## 프로젝트 구조
-
-```
-greenmate/
-├── components/
-│   ├── App.tsx
-│   ├── Community.tsx
-│   ├── CreateCommunityPost.tsx
-│   ├── CreateRecruitment.tsx
-│   ├── Login.tsx
-│   ├── MobileCommunity.tsx
-│   ├── MobileCreateCommunityPost.tsx
-│   ├── MobileCreateRecruitment.tsx
-│   ├── MobileRecyclingLearning.tsx
-│   ├── MobileTeamRecruitment.tsx
-│   ├── MobileViewCommunityPost.tsx
-│   ├── MobileViewRecruitment.tsx
-│   ├── RecyclingLearning.tsx
-│   ├── SignUp.tsx
-│   ├── TeamRecruitment.tsx
-│   ├── UserProfile.tsx
-│   ├── ViewCommunityPost.tsx
-│   └── ViewRecruitment.tsx
-├── pages/
-│   └── index.tsx
-├── styles/
-│   └── globals.css
-├── public/
-├── .env.local
-├── next.config.js
-├── package.json
-└── README.md
-```
