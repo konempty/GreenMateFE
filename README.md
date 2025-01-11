@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GreenMate (GreenMateBE & GreenMateFE)
 
-## Getting Started
+GreenMate는 환경운동가들을 위한 커뮤니티 플랫폼으로, 환경보호 활동을 지원하고 사람들 간의 소통과 학습을 돕기 위해 설계되었습니다. 이 프로젝트는 Beyond Imagination의 24시간 해커톤에서 개발되었으며 1등을 수상한 작품입니다.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 주요 기능
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 1. 환경 활동 공고
+- **기능**: 환경 보호 활동에 대한 공고를 작성하고 활동 영역을 지도 상에 표시하여 참여자를 모집.
+- **상세 설명**:
+  - 활동 정보를 상세히 작성 가능.
+  - 활동의 위치를 지도에 표시.
+  - 사용자는 댓글 작성 및 좋아요를 통해 공고에 반응 가능.
+  - 정해진 날짜에 활동이 진행.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 2. 커뮤니티 화면
+- **기능**: 환경운동 활동을 공유하고 다른 사용자와 소통 가능.
+- **상세 설명**:
+  - 인스타그램을 벤치마킹한 화면 디자인.
+  - 사용자들은 자신의 활동 사진과 글을 업로드 가능.
+  - 댓글 작성 및 좋아요 기능 제공.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. 분리수거 학습
+- **기능**: 다양한 재활용 쓰레기에 대한 올바른 분리배출 방법을 학습.
+- **상세 설명**:
+  - 사람들이 혼동하기 쉬운 쓰레기 분리배출 가이드를 제공.
+  - 사용자 친화적인 UI를 통해 쉽게 학습 가능.
 
-## Learn More
+### 4. 환경 운동 챗봇
+- **기능**: AI 챗봇을 통해 환경운동에 대한 질문과 답변을 주고받음.
+- **상세 설명**:
+  - 정해진 데이터가 아닌 사용자의 자유로운 질문을 기반으로 AI 챗봇이 답변.
+  - 환경 문제와 관련된 다양한 정보 제공.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 기술 스택
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 백엔드 (GreenMateBE)
+- **언어 및 프레임워크**: Kotlin, Spring Boot
+- **데이터베이스**: Oracle DB
+- **API 문서화**: Swagger 사용
 
-## Deploy on Vercel
+### 프론트엔드 (GreenMateFE)
+- **언어 및 프레임워크**: Next.js (React.js 기반), TypeScript
+- **상태 관리**: React의 기본 상태 관리 방식 사용
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 설치 및 실행 방법
+
+### 프론트엔드 실행
+1.	레포지토리 클론:
+   ```bash
+    git clone https://github.com/konempty/GreenMateFE.git
+   ```
+2.	패키지 설치:
+   ```bash
+    npm install
+   ```
+3.	Gradle을 사용하여 애플리케이션 빌드 및 실행:
+   ```bash
+    npm run dev
+   ```
+4. asd
+   ```
+   http://localhost:3000
+   ```
