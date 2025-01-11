@@ -1,69 +1,95 @@
-# GreenMate (GreenMateBE & GreenMateFE)
+# GreenMate
 
-GreenMate는 환경운동가들을 위한 커뮤니티 플랫폼으로, 환경보호 활동을 지원하고 사람들 간의 소통과 학습을 돕기 위해 설계되었습니다. 이 프로젝트는 Beyond Imagination의 24시간 해커톤에서 개발되었으며 1등을 수상한 작품입니다.
-
----
+GreenMate는 환경 운동가들을 위한 모임 독려 및 커뮤니티 플랫폼입니다. 이 프로젝트는 환경 보호에 관심 있는 사람들이 쉽게 모임을 만들고 참여할 수 있도록 돕는 것을 목표로 합니다.
 
 ## 주요 기능
 
-### 1. 환경 활동 공고
-- **기능**: 환경 보호 활동에 대한 공고를 작성하고 활동 영역을 지도 상에 표시하여 참여자를 모집.
-- **상세 설명**:
-  - 활동 정보를 상세히 작성 가능.
-  - 활동의 위치를 지도에 표시.
-  - 사용자는 댓글 작성 및 좋아요를 통해 공고에 반응 가능.
-  - 정해진 날짜에 활동이 진행.
+1. 팀 모집
+   - 환경 보호 활동을 위한 팀원 모집 글 작성
+   - 지도를 통한 활동 영역 설정 (원형 또는 다각형)
+   - 모집 글 목록 조회 및 상세 보기
 
-### 2. 커뮤니티 화면
-- **기능**: 환경운동 활동을 공유하고 다른 사용자와 소통 가능.
-- **상세 설명**:
-  - 인스타그램을 벤치마킹한 화면 디자인.
-  - 사용자들은 자신의 활동 사진과 글을 업로드 가능.
-  - 댓글 작성 및 좋아요 기능 제공.
+2. 커뮤니티
+   - 환경 보호 활동 관련 게시글 작성 및 공유
+   - 이미지 업로드 및 캐러셀 형태의 이미지 표시
+   - 좋아요, 댓글 기능
 
-### 3. 분리수거 학습
-- **기능**: 다양한 재활용 쓰레기에 대한 올바른 분리배출 방법을 학습.
-- **상세 설명**:
-  - 사람들이 혼동하기 쉬운 쓰레기 분리배출 가이드를 제공.
-  - 사용자 친화적인 UI를 통해 쉽게 학습 가능.
+3. 분리수거 학습
+   - 다양한 재활용 품목에 대한 정보 제공
+   - 품목별 올바른 분리수거 방법 안내
 
-### 4. 환경 운동 챗봇
-- **기능**: AI 챗봇을 통해 환경운동에 대한 질문과 답변을 주고받음.
-- **상세 설명**:
-  - 정해진 데이터가 아닌 사용자의 자유로운 질문을 기반으로 AI 챗봇이 답변.
-  - 환경 문제와 관련된 다양한 정보 제공.
+4. 사용자 관리
+   - 회원가입 및 로그인 기능
+   - 프로필 이미지 업로드
 
----
+5. 실시간 채팅
+   - AI 챗봇을 통한 사용자 지원
 
 ## 기술 스택
 
-### 백엔드 (GreenMateBE)
-- **언어 및 프레임워크**: Kotlin, Spring Boot
-- **데이터베이스**: Oracle DB
-- **API 문서화**: Swagger 사용
-
-### 프론트엔드 (GreenMateFE)
-- **언어 및 프레임워크**: Next.js (React.js 기반), TypeScript
-- **상태 관리**: React의 기본 상태 관리 방식 사용
-
----
+- Frontend: React, Next.js
+- UI 라이브러리: shadcn/ui
+- 지도 서비스: Google Maps API
+- 상태 관리: React Hooks (useState, useEffect)
+- 스타일링: Tailwind CSS
+- 아이콘: Lucide React
 
 ## 설치 및 실행 방법
 
-### 프론트엔드 실행
-1.	레포지토리 클론:
-   ```bash
-    git clone https://github.com/konempty/GreenMateFE.git
+1. 저장소 클론
    ```
-2.	패키지 설치:
-   ```bash
-    npm install
+   git clone https://github.com/your-username/greenmate.git
+   cd greenmate
    ```
-3.	Gradle을 사용하여 애플리케이션 빌드 및 실행:
-   ```bash
-    npm run dev
+
+2. 의존성 설치
    ```
-4. asd
+   npm install
    ```
-   http://localhost:3000
+
+3. 환경 변수 설정
+   `.env.local` 파일을 생성하고 다음 변수를 설정합니다:
    ```
+   NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
+   ```
+
+4. 개발 서버 실행
+   ```
+   npm run dev
+   ```
+
+5. 브라우저에서 `http://localhost:3000` 접속
+
+## 프로젝트 구조
+
+```
+greenmate/
+├── components/
+│   ├── App.tsx
+│   ├── Community.tsx
+│   ├── CreateCommunityPost.tsx
+│   ├── CreateRecruitment.tsx
+│   ├── Login.tsx
+│   ├── MobileCommunity.tsx
+│   ├── MobileCreateCommunityPost.tsx
+│   ├── MobileCreateRecruitment.tsx
+│   ├── MobileRecyclingLearning.tsx
+│   ├── MobileTeamRecruitment.tsx
+│   ├── MobileViewCommunityPost.tsx
+│   ├── MobileViewRecruitment.tsx
+│   ├── RecyclingLearning.tsx
+│   ├── SignUp.tsx
+│   ├── TeamRecruitment.tsx
+│   ├── UserProfile.tsx
+│   ├── ViewCommunityPost.tsx
+│   └── ViewRecruitment.tsx
+├── pages/
+│   └── index.tsx
+├── styles/
+│   └── globals.css
+├── public/
+├── .env.local
+├── next.config.js
+├── package.json
+└── README.md
+```
