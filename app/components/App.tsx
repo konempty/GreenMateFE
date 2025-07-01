@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -57,10 +57,19 @@ export default function App() {
   const [teamRecruitId, setTeamRecruitId] = useState<number>(0);
   const [communityPostId, setCommunityPostId] = useState<number>(0);
   const [isChatting, setIsChatting] = useState(false);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const mobileChatContainerRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   if (accessToken) {
     if (!user) {
-      const decodedToken = JSON.parse(atob(accessToken.split(".")[1]));
+      let base64 = accessToken
+        .split(".")[1]
+        .replace(/-/g, "+")
+        .replace(/_/g, "/");
+      // 패딩 추가
+      base64 += "=".repeat((4 - (base64.length % 4)) % 4);
+      const decodedToken = JSON.parse(atob(base64));
       setUser(decodedToken);
     }
   } else if (user) {
@@ -75,6 +84,10 @@ export default function App() {
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const toggleChat = () => setIsChatOpen(!isChatOpen);
 
@@ -276,7 +289,10 @@ export default function App() {
                 <X className="w-4 h-4" />
               </Button>
             </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div
+              className="flex-1 overflow-y-auto p-4 space-y-4"
+              ref={mobileChatContainerRef}
+            >
               {messages.map((message, index) => (
                 <div
                   key={index}
@@ -290,6 +306,7 @@ export default function App() {
                   </div>
                 </div>
               ))}
+              <div ref={messagesEndRef} />
             </div>
             <form onSubmit={sendMessage} className="p-4 border-t flex">
               <Input
@@ -430,7 +447,10 @@ export default function App() {
               <X className="w-4 h-4" />
             </Button>
           </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div
+            className="flex-1 overflow-y-auto p-4 space-y-4"
+            ref={chatContainerRef}
+          >
             {messages.map((message, index) => (
               <div
                 key={index}
@@ -444,6 +464,7 @@ export default function App() {
                 </div>
               </div>
             ))}
+            <div ref={messagesEndRef} />
           </div>
           <form onSubmit={sendMessage} className="p-4 border-t flex">
             <Input

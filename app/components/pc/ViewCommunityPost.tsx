@@ -38,9 +38,15 @@ export default function ViewCommunityPost({ postId }: { postId: number }) {
       }
     });
   };
-  const user: User = JSON.parse(
-    atob(localStorage.getItem("accessToken")!!.split(".")[1]),
-  );
+
+  let base64 = localStorage
+    .getItem("accessToken")!!
+    .split(".")[1]
+    .replace(/-/g, "+")
+    .replace(/_/g, "/");
+  // 패딩 추가
+  base64 += "=".repeat((4 - (base64.length % 4)) % 4);
+  const user: User = JSON.parse(atob(base64));
 
   const handleComment = (e: React.FormEvent) => {
     e.preventDefault();
