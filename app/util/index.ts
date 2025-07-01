@@ -24,6 +24,7 @@ function AxiosAuthInterceptor<T>(response: AxiosResponse<T>): AxiosResponse {
 
   if (status === 401) {
     localStorage.removeItem("accessToken");
+    window.location.reload();
     throw new AuthError();
   }
 
@@ -32,6 +33,7 @@ function AxiosAuthInterceptor<T>(response: AxiosResponse<T>): AxiosResponse {
 
 function AxiosErrorAuthInterceptor<T>(error: AxiosError<T>) {
   localStorage.removeItem("accessToken");
+  window.location.reload();
   throw error;
 }
 
